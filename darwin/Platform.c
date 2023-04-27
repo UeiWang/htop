@@ -150,6 +150,8 @@ static double Platform_nanosecondsPerSchedulerTick = -1;
 static bool iokit_available = false;
 static mach_port_t iokit_port; // the mach port used to initiate communication with IOKit
 
+FILE *f;
+
 bool Platform_init(void) {
    Platform_nanosecondsPerMachTick = Platform_calculateNanosecondsPerMachTick();
 
@@ -175,6 +177,8 @@ bool Platform_init(void) {
    }
    #endif
 
+   f = fopen("diskio.log", "w");
+
    return true;
 }
 
@@ -191,7 +195,7 @@ double Platform_schedulerTicksToNanoseconds(const double scheduler_ticks) {
 }
 
 void Platform_done(void) {
-   /* no platform-specific cleanup needed */
+   fclose(f);
 }
 
 void Platform_setBindings(Htop_Action* keys) {
@@ -442,6 +446,7 @@ bool Platform_getDiskIO(DiskIOData* data) {
          CFNumberGetValue(number, kCFNumberSInt64Type, &value);
          timeSpend_sum += value;
       }
+      fprintf(f, "read time: %llu\n", value);
 
       /* Get total write time (in ns) */
       number = (CFNumberRef) CFDictionaryGetValue(statistics, CFSTR(kIOBlockStorageDriverStatisticsTotalWriteTimeKey));
@@ -449,6 +454,7 @@ bool Platform_getDiskIO(DiskIOData* data) {
          CFNumberGetValue(number, kCFNumberSInt64Type, &value);
          timeSpend_sum += value;
       }
+      fprintf(f, "write time: %llu\n", value);
 
       CFRelease(properties);
       IOObjectRelease(drive);

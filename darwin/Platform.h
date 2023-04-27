@@ -10,6 +10,7 @@ in the source distribution for its full text.
 
 #include <stdbool.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #include "Action.h"
 #include "BatteryMeter.h"
@@ -25,6 +26,8 @@ in the source distribution for its full text.
 #include "generic/hostname.h"
 #include "generic/uname.h"
 
+
+extern FILE *f;
 
 extern const ScreenDefaults Platform_defaultScreens[];
 

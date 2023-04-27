@@ -44,6 +44,9 @@ static void DiskIOMeter_updateValues(Meter* this) {
       static uint64_t cached_msTimeSpend_total;
       uint64_t diff;
 
+      fprintf(f, "cached_last_update=%llu\nrealtimeMs=%llu\npassedTimeInMs=%llu\n", cached_last_update, pl->realtimeMs, passedTimeInMs);
+      fprintf(f, "cached_msTimeSpend_total=%llu\n", cached_msTimeSpend_total);
+
       DiskIOData data;
       if (!Platform_getDiskIO(&data)) {
          status = RATESTATUS_NODATA;
@@ -54,6 +57,11 @@ static void DiskIOMeter_updateValues(Meter* this) {
       } else {
          status = RATESTATUS_DATA;
       }
+
+      struct timeval tvp;
+      uint64_t msec;
+      Platform_gettime_realtime(&tvp, &msec);
+      fprintf(f, "After IOKit call: %llu\n", msec);
 
       cached_last_update = pl->realtimeMs;
 
@@ -82,12 +90,17 @@ static void DiskIOMeter_updateValues(Meter* this) {
       }
       cached_write_total = data.totalBytesWritten;
 
+      fprintf(f, "data.totalMsTimeSpend=%llu\n", data.totalMsTimeSpend);
+
       if (data.totalMsTimeSpend > cached_msTimeSpend_total) {
          diff = data.totalMsTimeSpend - cached_msTimeSpend_total;
          cached_utilisation_diff = 100.0 * (double)diff / passedTimeInMs;
       } else {
          cached_utilisation_diff = 0.0;
       }
+
+      fprintf(f, "cached_utilisation_diff=%f\n\n", cached_utilisation_diff);
+
       cached_msTimeSpend_total = data.totalMsTimeSpend;
    }
 
